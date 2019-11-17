@@ -1,4 +1,5 @@
 //https://leetcode-cn.com/problems/permutations/
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
@@ -14,7 +15,7 @@ public class Permutation {
     }
 
     private void generatePermutation(int[] nums, List<List<Integer>> results, int level, boolean[] used, Stack<Integer> stack) {
-        if(level == nums.length) {
+        if (level == nums.length) {
             results.add(new ArrayList<>(stack));
             return;
         }
