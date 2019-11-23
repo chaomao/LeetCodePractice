@@ -94,7 +94,7 @@ class SubsetsTest {
         assertEquals(arrayLists, anotherArrayLists);
     }
 
-    List<List<Integer>> generateLists(int[][] nums) {
+    static List<List<Integer>> generateLists(int[][] nums) {
         List<List<Integer>> results = new ArrayList<>();
         for (int[] num : nums) {
             ArrayList<Integer> list = new ArrayList<>(nums.length);
