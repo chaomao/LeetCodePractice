@@ -8,14 +8,7 @@ class MaxDepthBinaryTreeTest {
 
     @Test
     void depth_is_3() {
-        TreeNode treeNode = MergeBinaryTreeTest.generateTree("3,9,20,null,null,15,7");
-        assertEquals(3, max.maxDepth(treeNode));
-    }
-
-
-    @Test
-    void depth_is_3() {
-        TreeNode treeNode = MergeBinaryTreeTest.generateTree("3,9,20,null,null,15,7");
+        TreeNode treeNode = TreeNode.generateTree("3,9,20,null,null,15,7");
         assertEquals(3, max.maxDepth(treeNode));
     }
 

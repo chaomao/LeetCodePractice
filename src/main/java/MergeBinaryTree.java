@@ -1,5 +1,7 @@
 //https://leetcode-cn.com/problems/merge-two-binary-trees/
+import java.util.LinkedList;
 import java.util.Objects;
+import java.util.Queue;
 
 public class MergeBinaryTree {
 
@@ -26,6 +28,37 @@ class TreeNode {
 
     TreeNode(int x) {
         this.val = x;
+    }
+
+    static TreeNode generateTree(String treeString) {
+        String[] parts = treeString.split(",");
+        TreeNode root = new TreeNode(Integer.parseInt(parts[0]));
+        Queue<TreeNode> queue = new LinkedList<>();
+        queue.add(root);
+
+        int index = 1;
+        String item;
+        while (!queue.isEmpty()) {
+            TreeNode node = queue.remove();
+
+            if (index == parts.length) break;
+
+            item = parts[index++];
+            if (!item.equals("null")) {
+                node.left = new TreeNode(Integer.parseInt(item.trim()));
+                queue.add(node.left);
+            }
+
+            if (index == parts.length) break;
+
+            item = parts[index++];
+            if (!item.equals("null")) {
+                node.right = new TreeNode(Integer.parseInt(item.trim()));
+                queue.add(node.right);
+            }
+        }
+
+        return root;
     }
 
     @Override
