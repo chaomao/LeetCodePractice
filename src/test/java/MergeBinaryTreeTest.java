@@ -1,4 +1,3 @@
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.LinkedList;
@@ -113,7 +112,7 @@ class MergeBinaryTreeTest {
         assertNotEquals(tree1, tree2);
     }
 
-    TreeNode generateTree(String treeString) {
+    static TreeNode generateTree(String treeString) {
         String[] parts = treeString.split(",");
         TreeNode root = new TreeNode(Integer.parseInt(parts[0]));
         Queue<TreeNode> queue = new LinkedList<>();
