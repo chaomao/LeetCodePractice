@@ -105,6 +105,7 @@ class NIODemoServer extends Thread {
 
                         // 有新的连接并不代表这个通道就有数据，
                         // 这里将这个新的 SocketChannel 注册到 Selector，监听 OP_READ 事件，等待数据
+                        // serverSocketChannel.register(selector, SelectionKey.OP_READ);
                         ByteBuffer buffer = ByteBuffer.wrap("返回给客户端的数据...".getBytes());
                         socketChannel.write(buffer);
                         socketChannel.close();
