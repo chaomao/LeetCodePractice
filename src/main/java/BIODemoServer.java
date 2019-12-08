@@ -88,16 +88,40 @@ class NIODemoServer extends Thread {
             System.out.println("start server");
             while (true) {
                 System.out.println("selector ready to select");
-                selector.select();// 阻塞等待就绪的Channel，这是关键点之一
+                int readChannels = selector.select();// 阻塞等待就绪的Channel，这是关键点之一
+                System.out.println("after select");
+                if (readChannels == 0) {
+                    System.out.println("readchannel is 0");
+                    continue;
+                }
                 Iterator<SelectionKey> iter = selector.selectedKeys().iterator();
                 while (iter.hasNext()) {
                     SelectionKey key = iter.next();
-                    // 生产系统中一般会额外进行就绪状态检查
-                    sayHelloWorld((ServerSocketChannel) key.channel());
                     iter.remove();
+                    if (key.isAcceptable()) {
+                        // 有已经接受的新的到服务端的连接
+                        SocketChannel socketChannel = serverSocketChannel.accept();
+                        System.out.println("accept socket channel");
+
+                        // 有新的连接并不代表这个通道就有数据，
+                        // 这里将这个新的 SocketChannel 注册到 Selector，监听 OP_READ 事件，等待数据
+                        ByteBuffer buffer = ByteBuffer.wrap("返回给客户端的数据...".getBytes());
+                        socketChannel.write(buffer);
+                        socketChannel.close();
+                    } else if (key.isReadable()) {
+                        // 有数据可读
+                        // 上面一个 if 分支中注册了监听 OP_READ 事件的 SocketChannel
+                        System.out.println("read socket channel");
+                        SocketChannel socketChannel = (SocketChannel) key.channel();
+                        Thread.sleep(1000);
+                        ByteBuffer buffer = ByteBuffer.wrap("返回给客户端的数据...".getBytes());
+                        socketChannel.write(buffer);
+                        socketChannel.close();
+                    }
+
                 }
             }
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
@@ -126,31 +150,39 @@ class NIOClient {
                 socketChannel.connect(new InetSocketAddress(InetAddress.getLocalHost(), 8888));
                 socketChannel.configureBlocking(false);
                 System.out.println("t1与服务器的连接建立成功");
-                ByteBuffer byteBuffer = ByteBuffer.wrap("Hello world!".getBytes());
-                int read = socketChannel.read(byteBuffer);
-                System.out.println("t1read" + read);
-                System.out.println("t1receive" + new String(byteBuffer.array()).trim());
+
+                Selector selector = Selector.open();
+                socketChannel.register(selector, SelectionKey.OP_READ);
+
+                while (true) {
+                    //选择一组键，其相应的通道已为 I/O 操作准备就绪。
+                    //此方法执行处于阻塞模式的选择操作。
+                    selector.select();
+
+                    //返回此选择器的已选择键集。
+                    Set<SelectionKey> keys = selector.selectedKeys();
+                    System.out.println("keys=" + keys.size());
+                    Iterator<SelectionKey> keyIterator = keys.iterator();
+                    while (keyIterator.hasNext()) {
+                        SelectionKey key = keyIterator.next();
+                        keyIterator.remove();
+
+                        if (key.isReadable()) {//读取数据
+                            ByteBuffer readBuffer = ByteBuffer.allocate(1024);
+                            System.out.print("receive message:");
+                            SocketChannel client = (SocketChannel) key.channel();
+                            //将缓冲区清空以备下次读取
+                            readBuffer.clear();
+                            int num = client.read(readBuffer);
+                            System.out.println(new String(readBuffer.array(), 0, num));
+                        }
+                    }
+                }
             } catch (Exception e) {
 
             }
-        }
-        , "t1").start();
 
-        new Thread(() -> {
-            try {
-                SocketChannel socketChannel = SocketChannel.open();
-                socketChannel.connect(new InetSocketAddress(InetAddress.getLocalHost(), 8888));
-                socketChannel.configureBlocking(false);
-                System.out.println("t2与服务器的连接建立成功");
-                ByteBuffer byteBuffer = ByteBuffer.wrap("Hello world!".getBytes());
-                int read = socketChannel.read(byteBuffer);
-                System.out.println("t2read" + read);
-                System.out.println("t2receive" + new String(byteBuffer.array()).trim());
-            } catch (Exception e) {
-
-            }
-        }
-        , "t1").start();
+        }, "t1").start();
 
     }
 }
